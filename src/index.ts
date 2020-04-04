@@ -2,6 +2,30 @@ import { promises as fs } from 'fs';
 import { resolve } from 'path';
 import showdown from 'showdown';
 
+type ArticleConfig = {
+  title: string
+  description: string
+  date: string
+  tags: string[]
+  imageCover: string
+  photographerUrl: string
+  photographerName: string
+  articleFile: string
+  keywords: string
+}
+
+type ArticleAttributes = {
+  title: string
+  description: string
+  date: string
+  articleTags: string
+  imageCover: string
+  photographerUrl: string
+  photographerName: string
+  articleBody: string
+  keywords: string
+};
+
 const getPattern = (find: string): RegExp =>
   new RegExp('\{\{(?:\\s+)?(' + find + ')(?:\\s+)?\}\}', 'g');
 
@@ -11,46 +35,56 @@ const buildTag = (tagContent: string) => (tag: string): string =>
 const fromMarkdownToHTML = (articleMarkdown: string): string => {
   const converter = new showdown.Converter()
   return converter.makeHtml(articleMarkdown);
-}
+};
 
-const start = async () => {
+const getTemplateContent = async (): Promise<string> => {
   const contentTemplatePath = resolve(__dirname, '../data/template.html');
-  const content = await fs.readFile(contentTemplatePath, 'utf8');
+  return await fs.readFile(contentTemplatePath, 'utf8');
+};
 
+const getArticleConfig = async (): Promise<ArticleConfig> => {
   const articleConfigPath = resolve(__dirname, '../data/article.config.json');
   const articleConfigContent = await fs.readFile(articleConfigPath, 'utf8');
-  const articleConfig = JSON.parse(articleConfigContent);
+  return JSON.parse(articleConfigContent);
+};
 
-  const {
-    title,
-    description,
-    date,
-    tags,
-    imageCover,
-    photographerUrl,
-    photographerName,
-    articleFile,
-    keywords
-  } = articleConfig;
-
+const getArticleTags = async ({ tags }: { tags: string[] }): Promise<string> => {
   const tagTemplatePath = resolve(__dirname, '../data/tag_template.html');
   const tagContent = await fs.readFile(tagTemplatePath, 'utf8');
-  const articleTags = tags.map(buildTag(tagContent)).join('');
+  return tags.map(buildTag(tagContent)).join('');
+};
 
+const getArticleBody = async ({ articleFile }: { articleFile: string }): Promise<string> => {
   const articleMarkdownPath = resolve(__dirname, `../data/${articleFile}`);
   const articleMarkdown = await fs.readFile(articleMarkdownPath, 'utf8');
-  const articleBody = fromMarkdownToHTML(articleMarkdown);
+  return fromMarkdownToHTML(articleMarkdown);
+};
 
-  const article = content
-    .replace(getPattern('title'), title)
-    .replace(getPattern('description'), description)
-    .replace(getPattern('date'), date)
-    .replace(getPattern('tags'), articleTags)
-    .replace(getPattern('imageCover'), imageCover)
-    .replace(getPattern('photographerUrl'), photographerUrl)
-    .replace(getPattern('photographerName'), photographerName)
-    .replace(getPattern('article'), articleBody)
-    .replace(getPattern('keywords'), keywords);
+const buildArticle = (templateContent: string) => ({
+  with: (articleConfig: ArticleAttributes) =>
+    templateContent
+      .replace(getPattern('title'), articleConfig.title)
+      .replace(getPattern('description'), articleConfig.description)
+      .replace(getPattern('date'), articleConfig.date)
+      .replace(getPattern('tags'), articleConfig.articleTags)
+      .replace(getPattern('imageCover'), articleConfig.imageCover)
+      .replace(getPattern('photographerUrl'), articleConfig.photographerUrl)
+      .replace(getPattern('photographerName'), articleConfig.photographerName)
+      .replace(getPattern('article'), articleConfig.articleBody)
+      .replace(getPattern('keywords'), articleConfig.keywords)
+});
+
+const start = async () => {
+  const templateContent: string = await getTemplateContent();
+  const articleConfig: ArticleConfig = await getArticleConfig();
+  const articleTags: string = await getArticleTags(articleConfig);
+  const articleBody: string = await getArticleBody(articleConfig);
+
+  const article: string = buildArticle(templateContent).with({
+    ...articleConfig,
+    articleTags,
+    articleBody
+  });
 
   fs.writeFile('index.html', article);
 };
