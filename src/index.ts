@@ -4,6 +4,9 @@ import { resolve } from 'path';
 const getPattern = (find: string): RegExp =>
   new RegExp('\{\{(?:\\s+)?(' + find + ')(?:\\s+)?\}\}', 'g');
 
+const buildTag = (tagContent: string) => (tag: string): string =>
+  tagContent.replace(getPattern('tag'), tag);
+
 const start = async () => {
   const contentTemplatePath = resolve(__dirname, '../data/template.html');
   const content = await fs.readFile(contentTemplatePath, 'utf8');
@@ -24,11 +27,15 @@ const start = async () => {
     keywords
   } = articleConfig;
 
+  const tagTemplatePath = resolve(__dirname, '../data/tag_template.html');
+  const tagContent = await fs.readFile(tagTemplatePath, 'utf8');
+  const articleTags = tags.map(buildTag(tagContent)).join('');
+
   const article = content
     .replace(getPattern('title'), title)
     .replace(getPattern('description'), description)
     .replace(getPattern('date'), date)
-    .replace(getPattern('tags'), tags)
+    .replace(getPattern('tags'), articleTags)
     .replace(getPattern('imageCover'), imageCover)
     .replace(getPattern('photographerUrl'), photographerUrl)
     .replace(getPattern('photographerName'), photographerName)
