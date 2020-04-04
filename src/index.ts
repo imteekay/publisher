@@ -38,24 +38,24 @@ const fromMarkdownToHTML = (articleMarkdown: string): string => {
 };
 
 const getTemplateContent = async (): Promise<string> => {
-  const contentTemplatePath = resolve(__dirname, '../data/template.html');
+  const contentTemplatePath = resolve(__dirname, '../examples/template.html');
   return await fs.readFile(contentTemplatePath, 'utf8');
 };
 
 const getArticleConfig = async (): Promise<ArticleConfig> => {
-  const articleConfigPath = resolve(__dirname, '../data/article.config.json');
+  const articleConfigPath = resolve(__dirname, '../examples/article.config.json');
   const articleConfigContent = await fs.readFile(articleConfigPath, 'utf8');
   return JSON.parse(articleConfigContent);
 };
 
 const getArticleTags = async ({ tags }: { tags: string[] }): Promise<string> => {
-  const tagTemplatePath = resolve(__dirname, '../data/tag_template.html');
+  const tagTemplatePath = resolve(__dirname, '../examples/tag_template.html');
   const tagContent = await fs.readFile(tagTemplatePath, 'utf8');
   return tags.map(buildTag(tagContent)).join('');
 };
 
 const getArticleBody = async ({ articleFile }: { articleFile: string }): Promise<string> => {
-  const articleMarkdownPath = resolve(__dirname, `../data/${articleFile}`);
+  const articleMarkdownPath = resolve(__dirname, `../examples/${articleFile}`);
   const articleMarkdown = await fs.readFile(articleMarkdownPath, 'utf8');
   return fromMarkdownToHTML(articleMarkdown);
 };
