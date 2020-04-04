@@ -6,20 +6,20 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="HandheldFriendly" content="True">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <meta name="description" content="${description}">
-  <meta name="keywords" content="${keywords}">
+  <meta name="description" content="{{ description }}">
+  <meta name="keywords" content="{{ keywords }}">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="${title}">
-  <meta property="og:description" content="${description}">
+  <meta property="og:title" content="{{ title }}">
+  <meta property="og:description" content="{{ description }}">
   <meta property="og:locale" content="en">
-  <meta property="og:image" content="${imageCover}">
-  <meta property="og:updated_time" content="${date}T00:00:00.000Z">
+  <meta property="og:image" content="{{ imageCover }}">
+  <meta property="og:updated_time" content="{{ date }}T00:00:00.000Z">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="${title}">
-  <meta name="twitter:description" content="${description}">
-  <meta name="twitter:image" content="${imageCover}">
+  <meta name="twitter:title" content="{{ title }}">
+  <meta name="twitter:description" content="{{ description }}">
+  <meta name="twitter:image" content="{{ imageCover }}">
 
-  <title>${title}</title>
+  <title>{{ title }}</title>
   <link rel="stylesheet" type="text/css" href="../../../stylesheets/main.css">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
     integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
@@ -31,39 +31,39 @@
   <div class="content index width mx-auto px2 my4">
     <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
       <header>
-        <h1 class="posttitle">${title}</h1>
+        <h1 class="posttitle">{{ title }}</h1>
         <div class="meta">
           <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
             <span itemprop="name">TK</span>
           </span>
 
           <div class="postdate">
-            <time datetime="${date}T00:00:00.000Z" itemprop="datePublished">${date}</time>
+            <time datetime="{{ date }}T00:00:00.000Z" itemprop="datePublished">{{ date }}</time>
           </div>
 
           <div class="article-tag">
             <i class=b fa-tag"></i>
-            ${tags}
+            {{ tags }}
           </div>
         </div>
       </header>
 
       <div class="figure">
-        <img src="${imageCover}">
+        <img src="{{ imageCover }}">
         <span class="figcaption">
-          Photo by <a href="${photographerUrl}" target="_blank">${photographerName}</a>
+          Photo by <a href="{{ photographerUrl }}" target="_blank">{{ photographerName }}</a>
         </span>
       </div>
 
       <hr />
 
-      ${article}
+      {{ article }}
     </article>
 
     <div class="meta meta-footer">
       <div class="article-tag">
         Tags:
-        ${tags}
+        {{ tags }}
       </div>
     </div>
 
