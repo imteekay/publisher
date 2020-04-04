@@ -1,11 +1,15 @@
 {
-  "title": "",
-  "description": "",
-  "date": "",
-  "tags": "",
-  "imageCover": "",
-  "photographerUrl": "",
-  "photographerName": "",
-  "articleFile": "",
-  "keywords": ""
+  "title": "Typed State Management",
+  "description": "My studies on how to build consistent systems",
+  "date": "2020-02-02",
+  "tags": [
+    "typescript",
+    "javascript",
+    "react"
+  ],
+  "imageCover": "uma-imagem.png",
+  "photographerUrl": "www.tk.com",
+  "photographerName": "TK",
+  "articleFile": "article.md",
+  "keywords": "typescript,react,javascript"
 }
