@@ -86,7 +86,7 @@ const start = async () => {
     articleBody
   });
 
-  fs.writeFile('index.html', article);
+  fs.writeFile('examples/index.html', article);
 };
 
 start();
