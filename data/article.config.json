@@ -10,6 +10,6 @@
   "imageCover": "uma-imagem.png",
   "photographerUrl": "www.tk.com",
   "photographerName": "TK",
-  "articleFile": "testando aqui",
+  "articleFile": "article.md",
   "keywords": "typescript,react,javascript"
 }
