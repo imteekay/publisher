@@ -1,11 +1,17 @@
 import { promises as fs } from 'fs';
 import { resolve } from 'path';
+import showdown from 'showdown';
 
 const getPattern = (find: string): RegExp =>
   new RegExp('\{\{(?:\\s+)?(' + find + ')(?:\\s+)?\}\}', 'g');
 
 const buildTag = (tagContent: string) => (tag: string): string =>
   tagContent.replace(getPattern('tag'), tag);
+
+const fromMarkdownToHTML = (articleMarkdown: string): string => {
+  const converter = new showdown.Converter()
+  return converter.makeHtml(articleMarkdown);
+}
 
 const start = async () => {
   const contentTemplatePath = resolve(__dirname, '../data/template.html');
@@ -31,6 +37,10 @@ const start = async () => {
   const tagContent = await fs.readFile(tagTemplatePath, 'utf8');
   const articleTags = tags.map(buildTag(tagContent)).join('');
 
+  const articleMarkdownPath = resolve(__dirname, `../data/${articleFile}`);
+  const articleMarkdown = await fs.readFile(articleMarkdownPath, 'utf8');
+  const articleBody = fromMarkdownToHTML(articleMarkdown);
+
   const article = content
     .replace(getPattern('title'), title)
     .replace(getPattern('description'), description)
@@ -39,10 +49,8 @@ const start = async () => {
     .replace(getPattern('imageCover'), imageCover)
     .replace(getPattern('photographerUrl'), photographerUrl)
     .replace(getPattern('photographerName'), photographerName)
-    .replace(getPattern('articleFile'), articleFile)
+    .replace(getPattern('article'), articleBody)
     .replace(getPattern('keywords'), keywords);
-
-  console.log(article)
 };
 
 start();
