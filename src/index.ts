@@ -51,6 +51,8 @@ const start = async () => {
     .replace(getPattern('photographerName'), photographerName)
     .replace(getPattern('article'), articleBody)
     .replace(getPattern('keywords'), keywords);
+
+  fs.writeFile('index.html', article);
 };
 
 start();
