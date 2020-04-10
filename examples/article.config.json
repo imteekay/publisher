@@ -1,15 +1,15 @@
 {
-  "title": "Typed State Management",
-  "description": "My studies on how to build consistent systems",
-  "date": "2020-02-02",
+  "title": "Fun with Dates",
+  "description": "Learning about Dates and playing around with a new API",
+  "date": "2020-04-15",
   "tags": [
     "typescript",
-    "javascript",
-    "react"
+    "javascript"
   ],
-  "imageCover": "uma-imagem.png",
-  "photographerUrl": "www.tk.com",
-  "photographerName": "TK",
+  "imageCover": "assets/couple-date.jpg",
+  "imageAlt": "Two girls sitting together and eating icecream in restaurant",
+  "photographerUrl": "https://unsplash.com/@jmvillejo",
+  "photographerName": "Jed Villejo",
   "articleFile": "article.md",
-  "keywords": "typescript,react,javascript"
+  "keywords": "typescript,javascript"
 }

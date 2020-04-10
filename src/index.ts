@@ -8,6 +8,7 @@ type ArticleConfig = {
   date: string
   tags: string[]
   imageCover: string
+  imageAlt: string
   photographerUrl: string
   photographerName: string
   articleFile: string
@@ -20,6 +21,7 @@ type ArticleAttributes = {
   date: string
   articleTags: string
   imageCover: string
+  imageAlt: string
   photographerUrl: string
   photographerName: string
   articleBody: string
@@ -68,6 +70,7 @@ const buildArticle = (templateContent: string) => ({
       .replace(getPattern('date'), articleConfig.date)
       .replace(getPattern('tags'), articleConfig.articleTags)
       .replace(getPattern('imageCover'), articleConfig.imageCover)
+      .replace(getPattern('imageAlt'), articleConfig.imageAlt)
       .replace(getPattern('photographerUrl'), articleConfig.photographerUrl)
       .replace(getPattern('photographerName'), articleConfig.photographerName)
       .replace(getPattern('article'), articleConfig.articleBody)

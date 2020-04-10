@@ -1,382 +1,371 @@
-In this article, we will talk about closures, curried functions, and play around with these concepts to build cool abstractions. I want to show the idea behind each concept, but also make it very practical with examples and refactor code to make it more fun.
+As an ex-Rubyist, I always liked to work with Ruby dates (mental note: not the timezone part). I liked the human way on how Ruby and Rails provide methods to handle the Date object.
 
-## Closures
+In Ruby, we can get the current date by doing:
 
-So closure is a common topic in JavaScript and we will start with it. As MDN web docs defines:
+```ruby
+require 'date'
 
-> "A closure is the combination of a function bundled together (enclosed) with references to its surrounding state (the lexical environment)."
+Date.today # #<Date: 2020-04-05 ((2458945j,0s,0n),+0s,2299161j)>
+```
 
-Basically, every time a function is created, a closure is also created and it gives access to all state (variables, constants, functions, etc). The surrounding state is known as the `lexical environment`.
+This is pretty cool! I can send a simple message to the Date object "hey, provide me the `today date`" by calling the `today` method.
 
-Let's show a simple example:
+Or simply get the `year`, `month`, `day`.
 
-```javascript
-function makeFunction() {
-  const name = 'TK';
-  function displayName() {
-    console.log(name);
-  }
-  return displayName;
+```ruby
+date = Date.today
+date.year # 2020
+date.month # 4
+date.day # 5
+```
+
+Using Rails, it is also possible to call the `yesterday` method.
+
+```ruby
+Date.yesterday
+```
+
+Rails also provides other interesting APIs: `beginning_of_month`, `minutes.ago`, `days.ago`.
+
+So after a long time with Ruby and Rails, I started using JavaScript more and more. But the JavaScript Date object was really strange for me. I wanted to use all the Ruby/Rails date APIs but in JavaScript and Typescript.
+
+I didn't want to monkey patch or build new methods in the JavaScript Date object. I could just provide some simple functions and handle the Date internally.
+
+## Dating dates
+
+First things first: I wanted to better understand the Date object. How do we create it?
+
+```typescript
+new Date();
+```
+
+By simply instantiate the Date object. We get the representation of `now` (the current date).
+
+The other APIs I need to try was: `getDate`, `getMonth`, and `getFullYear`. These are all methods to handle the date.
+
+```typescript
+const day: number = now.getDate(); // 5
+const month: number = now.getMonth(); // 3
+const year: number = now.getFullYear(); // 2020
+```
+
+We could experiment with a whole bunch of other methods here, but I think we are good to move to the next part.
+
+## Fun with dates
+
+In this part, we will build functions! I wanted to try creating this API:
+
+- day
+- month
+- year
+- today
+- yesterday
+- beginningOfDay
+- beginningOfMonth
+- beginningOfYear
+- get(1).dayAgo
+- get(2).daysAgo
+- get(1).monthAgo
+- get(2).monthsAgo
+- get(1).yearAgo
+- get(2).yearsAgo
+
+## day, month, and year
+
+In this case, we provide a date and it will return the day of this date we provided.
+
+```typescript
+const day = (date: Date): number => date.getDate();
+const month = (date: Date): number => date.getMonth();
+const year = (date: Date): number => date.getFullYear();
+```
+
+And we can use it like:
+
+```typescript
+const now = new Date();
+
+day(now); // 5
+month(now); // 3
+year(now); // 2020
+```
+
+## today and yesterday
+
+With `today` function, we could just return the `new Date()` and we are good. But this returns the representation of `now` with "time" included.
+
+```typescript
+new Date(); // 2020-04-05T18:58:45
+```
+
+But it would be great to return the beginning of the day. We could simply pass the day, month, and year to the `Date` and it will generate this for us.
+
+```typescript
+const today = (): Date => {
+  const now: Date = new Date();
+  const day: number = now.getDate();
+  const month: number = now.getMonth();
+  const year: number = now.getFullYear();
+
+  return new Date(year, month, day);
 };
 ```
 
-What do we have here?
+Great. The `yesterday` function would work very similarly. Just subtract the day and we are good to go.
 
-- Our main function called `makeFunction`
-- A constant named `name` assigned with a string `'TK'`
-- The definition of the `displayName` function (that just log the `name` constant)
-- And finally the `makeFunction` returns the `displayName` function
+```typescript
+const yesterday = (): Date => {
+  const now: Date = new Date();
+  const day: number = now.getDate();
+  const month: number = now.getMonth();
+  const year: number = now.getFullYear();
 
-This is just a definition of a function. When we call the `makeFunction`, it will create everything within it: constant and function in this case.
-
-As we know, when the `displayName` function is created, the closure is also created and it makes the function aware of the environment, in this case, the `name` constant. This is why we can `console.log` the `name` without breaking anything. The function knows about the lexical environment.
-
-```javascript
-const myFunction = makeFunction();
-myFunction(); // TK
-```
-
-Great! It works as expected! The return of the `makeFunction` is a function that we store it in the `myFunction` constant, call it later, and displays `TK`.
-
-We can also make it work as an arrow function:
-
-```javascript
-const makeFunction = () => {
-  const name = 'TK';
-  return () => console.log(name);
+  return new Date(year, month, day - 1);
 };
 ```
 
-But what if we want to pass the name and display it? A parameter!
+But what happens when we subtract the day if the day is the first day of the month?
 
-```javascript
-const makeFunction = (name = 'TK') => {
-  return () => console.log(name);
-};
+```typescript
+// date to handle
+new Date(2020, 3, 1); // 2020-04-01
 
-// Or a one-liner
-const makeFunction = (name = 'TK') => () => console.log(name);
+// when subtracting the day: from 1 to 0
+new Date(2020, 3, 0); // 2020-03-31
 ```
 
-Now we can play with the name:
+And what happens if it is the first day of the year?
 
-```javascript
-const myFunction = makeFunction();
-myFunction(); // TK
+```typescript
+// date to handle
+new Date(2020, 0, 1); // 2020-01-01
 
-const myFunction = makeFunction('Dan');
-myFunction(); // Dan
+// when subtracting the day: from 1 to 0
+new Date(2020, 0, 0); // 2019-12-31
 ```
 
-Our `myFunction` is aware of the arguments passed: default or dynamic value.
-The closure does make the created function not only aware of constants/variables, but also other functions within the function.
+Yes, JavaScript can be pretty smart too!
 
-So this also works:
+With these two new functions, we can also refactor the logic to get the separated date into a separate function.
 
-```javascript
-const makeFunction = (name = 'TK') => {
-  const display = () => console.log(name);
-  return () => display();
-};
+```typescript
+const getSeparatedDate = (): { day: number, month: number, year: number } => {
+  const now: Date = new Date();
+  const day: number = now.getDate();
+  const month: number = now.getMonth();
+  const year: number = now.getFullYear();
 
-const myFunction = makeFunction();
-myFunction(); // TK
-```
-
-The returned function knows about the `display` function and it is able to call it.
-
-One powerful technique is to use closures to build "private" functions and variables.
-
-Months ago I was learning data structures (again!) and wanted to implement each one. But I was always using the object oriented approach. As a functional programming enthusiast, I wanted to build all the data structures following FP principles (pure functions, immutability, referential transparency, etc).
-
-The first data structure I was learning was the Stack. It is pretty simple. The main API is:
-
-- `push`: add an item to the first place of the stack
-- `pop`: remove the first item from the stack
-- `peek`: get the first item from the stack
-- `isEmpty`: verify if the stack is empty
-- `size`: get the number of items the stack has
-
-We could clearly create a simple function to each "method" and pass the stack data to it. It use/transform the data and return it.
-
-But we can also create a private stack data and exposes only the API methods. Let's do this!
-
-```javascript
-const buildStack = () => {
-  let items = [];
-
-  const push = (item) => items = [item, ...items];
-  const pop = () => items = items.slice(1);
-  const peek = () => items[0];
-  const isEmpty = () => !items.length;
-  const size = () => items.length;
-
-  return {
-    push,
-    pop,
-    peek,
-    isEmpty,
-    size,
-  };
+  return { day, month, year };
 };
 ```
 
-As we created the `items` stack data inside our `buildStack` function, it is "private". It can be accessed only within the function. In this case, only the `push`, `pop`, etc could touch the data. And this is what we're looking for.
+Let's improve this! This returned type could be a Typescript `type`.
 
-And how do we use it? Like this:
-
-```javascript
-const stack = buildStack();
-
-stack.isEmpty(); // true
-
-stack.push(1); // [1]
-stack.push(2); // [2, 1]
-stack.push(3); // [3, 2, 1]
-stack.push(4); // [4, 3, 2, 1]
-stack.push(5); // [5, 4, 3, 2, 1]
-
-stack.peek(); // 5
-stack.size(); // 5
-stack.isEmpty(); // false
-
-stack.pop(); // [4, 3, 2, 1]
-stack.pop(); // [3, 2, 1]
-stack.pop(); // [2, 1]
-stack.pop(); // [1]
-
-stack.isEmpty(); // false
-stack.peek(); // 1
-stack.pop(); // []
-stack.isEmpty(); // true
-stack.size(); // 0
-```
-
-So, when the stack is created, all the functions are aware of the `items` data. But outside the function, we can't access this data. It's private. We just modify the data by using the stack builtin API.
-
-## **Curry**
-
-> "Currying is the process of taking a function with multiple arguments and turning it into a sequence of functions each with only a single argument." - Wikipedia
-
-So imagine you have a function with multiple arguments: `f(a, b, c)`. Using currying, we achieve a function `f(a)` that returns a function `g(b)` the returns a function `h(c)`.
-
-Basically: `f(a, b, c)` —> `f(a) => g(b) => h(c)`
-
-Let's build a simple example: add two numbers. But first, without currying!
-
-```javascript
-const add = (x, y) => x + y;
-add(1, 2); // 3
-```
-
-Great! Super simple! Here we have a function with two arguments. To transform it into a curried function we need a function that receives `x` and returns a function that receives `y` and returns the sum of both values.
-
-```javascript
-const add = (x) => {
-  function addY(y) {
-    return x + y;
-  }
-
-  return addY;
+```typescript
+type SeparatedDate = {
+  day: number
+  month: number
+  year: number
 };
 ```
 
-We can refactor this `addY` into a anonymous arrow function:
+Less verbose now:
 
-```javascript
-const add = (x) => {
-  return (y) => {
-    return x + y;
-  }
+```typescript
+const getSeparatedDate = (): SeparatedDate => {
+  const now: Date = new Date();
+  const day: number = now.getDate();
+  const month: number = now.getMonth();
+  const year: number = now.getFullYear();
+
+  return { day, month, year };
 };
 ```
 
-Or simplify it by building one liner arrow functions:
+I this case, we are always returning the `day`, `month`, and `year` attributes of the current date. But what if we want to pass a different date? A new argument to the rescue:
 
-```javascript
-const add = (x) => (y) => x + y;
-```
+```typescript
+const getSeparatedDate = (now: Date = new Date()): SeparatedDate => {
+  const day: number = now.getDate();
+  const month: number = now.getMonth();
+  const year: number = now.getFullYear();
 
-These three different curried functions have the same behavior: build a sequence of functions with only one argument.
-
-How we use it?
-
-```javascript
-add(10)(20); // 30
-```
-
-At first, it can look a bit strange, but it has a logic behind it. `add(10)` returns a function. And we call this function with the `20` value.
-
-This is the same as:
-
-```javascript
-const addTen = add(10);
-addTen(20); // 30
-```
-
-And this is interesting. We can generate specialized functions by calling the first function. Imagine we want an `increment` function. We can generate it from our `add` function by passing the `1` as the value.
-
-```javascript
-const increment = add(1);
-increment(9); // 10
-```
-
----
-
-When I was implementing the [Lazy Cypress](https://github.com/leandrotk/lazy-cypress), a npm library to record the user behavior in a form page and generate Cypress testing code, I want to build a function to generate this string `input[data-testid="123"]`. So here we have the element (`input`), the attribute (`data-testid`), and the value (`123`). Interpolating this string in JavaScript would look like this: `${element}[${attribute}="${value}"]`.
-
-the first implementation in mind is to receive these three values as parameters and return the interpolated string above.
-
-```javascript
-const buildSelector = (element, attribute, value) =>
-  `${element}[${attribute}="${value}"]`;
-
-buildSelector('input', 'data-testid', 123); // input[data-testid="123"]
-```
-
-And it is great. I achieved what I was looking for. But at the same time, I wanted to build a more idiomatic function. Something I could write "*get an element X with attribute Y and value Z*". So what if we break this phrase into three steps:
-
-- "*get an element X*": `get(x)`
-- "*with attribute Y*": `withAttribute(y)`
-- "*and value Z*": `andValue(z)`
-
-We can transform the `buildSelector(x, y, z)` into `get(x)` ⇒ `withAttribute(y)` ⇒ `andValue(z)` by using the currying concept.
-
-```javascript
-const get = (element) => {
-  return {
-    withAttribute: (attribute) => {
-      return {
-        andValue: (value) => `${element}[${attribute}="${value}"]`,
-      }
-    }
-  };
+  return { day, month, year };
 };
 ```
 
-Here we use a different idea: returning an object with function as key-value. This way we can achieve this syntax: `get(x).withAttribute(y).andValue(z)`.
+Now we have a function that can receive a new date, but if it doesn't, it just uses the default value: the representation of `now`.
 
-And for each returned object, we have the next function and argument.
+How does our functions `today` and `yesterday` look like now?
 
-Refactoring time! Remove the `return` statements:
+```typescript
+const today = (): Date => {
+  const { day, month, year }: SeparatedDate = getSeparatedDate();
 
-```javascript
-const get = (element) => ({
-  withAttribute: (attribute) => ({
-    andValue: (value) => `${element}[${attribute}="${value}"]`,
-  }),
-});
+  return new Date(year, month, day);
+};
+
+const yesterday = (): Date => {
+  const { day, month, year }: SeparatedDate = getSeparatedDate();
+
+  return new Date(year, month, day - 1);
+};
 ```
 
-I think it looks prettier. And we use it like:
+Both functions use the `getSeparatedDate` function to get the Date attributes and return the appropriate date.
 
-```javascript
-const selector = get('input')
-  .withAttribute('data-testid')
-  .andValue(123);
+## Beginning of everything
 
-selector; // input[data-testid="123"]
+To build the `beginningOfDay`, it would look exactly of the `today` function, as we want to the current date but at the beginning of the day.
+
+```typescript
+const beginningOfDay = (date: Date = new Date()): Date => {
+  const { day, month, year }: SeparatedDate = getSeparatedDate();
+
+  return new Date(year, month, day);
+};
 ```
 
-The `andValue` function knows about the `element` and `attribute` values because it is aware of the lexical environment as we talked about closures before.
+Nothing special here.
 
----
+But just minor comment if you didn't notice: At first, I'm built this function to get the beginning of the day of the current day. But I wanted to make it flexible enough to get the beginning of the day of other days too.
 
-We can also implement functions using "partial currying". Separate only the first argument from the rest for example.
+So "argument", right? Now the function receives a date, but it is flexible to not receive it too. I just handle it with a default value of the current date.
 
-Doing web development for a long time, I commonly used the [event listener Web API](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener). It is used this way:
+For the `beginningOfMonth`, it will look pretty much the same, but instead of using the `day`, we just set it to `1`.
 
-```javascript
-const log = () => console.log('clicked');
-button.addEventListener('click', log);
+```typescript
+const beginningOfMonth = (date: Date = new Date()): Date => {
+  const { month, year }: SeparatedDate = getSeparatedDate();
+
+  return new Date(year, month, 1);
+};
 ```
 
-I wanted to create an abstraction to build specialized event listeners and use them by passing the element and callback handler.
+You got it, the `beginningOfYear` is similar. But also changing the `month` attribute.
 
-```javascript
-const buildEventListener = (event) => (element, handler) => element.addEventListener(event, handler);
+```typescript
+const beginningOfYear = (date: Date = new Date()): Date => {
+  const { year }: SeparatedDate = getSeparatedDate();
+
+  return new Date(year, 0, 1);
+};
 ```
 
-This way I can create different specialized event listeners and use it as functions.
+## Traveling back in time
 
-```javascript
-const onClick = buildEventListener('click');
-onClick(button, log);
+Now the `get(1).dayAgo` API. We could build a `get` function that receives a `number` and return an object like:
 
-const onHover = buildEventListener('hover');
-onHover(link, log);
-```
-
----
-
-With all these concepts, I could create a SQL query using JavaScript syntax. I wanted to SQL query a JSON data like:
-
-```javascript
-const json = {
-  "users": [
-    {
-      "id": 1,
-      "name": "TK",
-      "age": 25,
-      "email": "tk@mail.com"
-    },
-    {
-      "id": 2,
-      "name": "Kaio",
-      "age": 11,
-      "email": "kaio@mail.com"
-    },
-    {
-      "id": 3,
-      "name": "Daniel",
-      "age": 28,
-      "email": "dani@mail.com"
-    }
-  ]
+```typescript
+{
+  dayAgo,
+  monthAgo,
+  yearAgo
 }
 ```
 
-So I built a simple engine to handle this implementation:
+For each attribute of this object, it would be the returned value we expect.
 
-```javascript
-const startEngine = (json) => (attributes) => ({ from: from(json, attributes) });
+```typescript
+const get = (n: number): { dayAgo: Date, monthAgo: Date, yearAgo: Date } => {
+  const { day, month, year }: SeparatedDate = getSeparatedDate();
 
-const buildAttributes = (node) => (acc, attribute) => ({ ...acc, [attribute]: node[attribute] });
+  const dayAgo: Date = new Date(year, month, day - n);
+  const monthAgo: Date = new Date(year, month - n, day);
+  const yearAgo: Date = new Date(year - n, month, day);
 
-const executeQuery = (attributes, attribute, value) => (resultList, node) =>
-  node[attribute] === value
-    ? [...resultList, attributes.reduce(buildAttributes(node), {})]
-    : resultList;
-
-const where = (json, attributes) => (attribute, value) =>
-  json
-    .reduce(executeQuery(attributes, attribute, value), []);
-
-const from = (json, attributes) => (node) => ({ where: where(json[node], attributes) });
+  return { dayAgo, monthAgo, yearAgo };
+};
 ```
 
-With this implementation, we can start the engine with the JSON data:
+What about a `DateAgo` type?
 
-```javascript
-const select = startEngine(json);
+```typescript
+type DateAgo = {
+  dayAgo: Date
+  monthAgo: Date
+  yearAgo: Date
+};
 ```
 
-And use it like a SQL query:
+And now using the new type:
 
-```javascript
-select(['id', 'name'])
-  .from('users')
-  .where('id', 1);
+```typescript
+const get = (n: number): DateAgo => {
+  const { day, month, year }: SeparatedDate = getSeparatedDate();
 
-result; // [{ id: 1, name: 'TK' }]
+  const dayAgo: Date = new Date(year, month, day - n);
+  const monthAgo: Date = new Date(year, month - n, day);
+  const yearAgo: Date = new Date(year - n, month, day);
+
+  return { dayAgo, monthAgo, yearAgo };
+};
 ```
 
----
+We build each attribute: `dayAgo`, `monthAgo`, and `yearAgo` by basically handling the Date object as we know.
 
-That's it for today. We could go on and on showing a lot of different examples of abstractions, but now I let you play with those concepts.
+But now we also need to implement the object in the plural: `daysAgo`, `monthsAgo`, and `yearsAgo`. But only for a number greater than 1.
+
+For these new attributes, we don't need to create a whole new date again. We can use the same value from the singular attributes.
+
+We also need to handle the `number` received.
+
+- if it is greater than 1: return the object with plural attributes
+- otherwise: return the object with singular attributes
+
+```typescript
+const get = (n: number): DateAgo | DatesAgo => {
+  const { day, month, year }: SeparatedDate = getSeparatedDate();
+
+  const dayAgo: Date = new Date(year, month, day - n);
+  const monthAgo: Date = new Date(year, month - n, day);
+  const yearAgo: Date = new Date(year - n, month, day);
+
+  const daysAgo: Date = dayAgo;
+  const monthsAgo: Date = monthAgo;
+  const yearsAgo: Date = yearAgo;
+
+  return n > 1
+    ? { daysAgo, monthsAgo, yearsAgo }
+    : { dayAgo, monthAgo, yearAgo };
+};
+```
+
+- In this case, I also created the `DatesAgo` type and used the Typescript `Union Type` feature.
+- We reuse the singular values.
+- And do a simple ternary to handle the number received.
+
+But what if we pass a `0` or negative value? We can throw an error:
+
+```typescript
+const get = (n: number): DateAgo | DatesAgo => {
+  if (n < 1) {
+    throw new Error('Number should be greater or equal than 1');
+  }
+
+  const { day, month, year }: SeparatedDate = getSeparatedDate();
+
+  const dayAgo: Date = new Date(year, month, day - n);
+  const monthAgo: Date = new Date(year, month - n, day);
+  const yearAgo: Date = new Date(year - n, month, day);
+
+  const daysAgo: Date = dayAgo;
+  const monthsAgo: Date = monthAgo;
+  const yearsAgo: Date = yearAgo;
+
+  return n > 1
+    ? { daysAgo, monthsAgo, yearsAgo }
+    : { dayAgo, monthAgo, yearAgo };
+};
+```
+
+The Date can be fun too. Learn the basic concepts and just play around with it, you'll like! I hope this post was valuable to you!
 
 ## Resources
 
-- [Blog post source code](https://github.com/tk-notes/blog/tree/master/closures-currying-and-cool-abstractions)
-- [Closures | MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures)
-- [Currying | Fun Fun Function](https://www.youtube.com/watch?v=iZLP4qOwY8I)
+- [Date - JavaScript | MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date)
+- [Ruby on Rails Date API](https://api.rubyonrails.org/classes/Date.html)
+- [Ruby Date API](https://ruby-doc.org/stdlib-2.7.1/libdoc/date/rdoc/Date.html)
+- [Dating library](https://github.com/leandrotk/dating)
+- [Typescript Learnings 001: Object Destructuring](https://leandrotk.github.io/tk/2020/04/typescript-learnings/001-object-destructuring.html)
+- [Understanding Date and Time in JavaScript](https://www.digitalocean.com/community/tutorials/understanding-date-and-time-in-javascript)
