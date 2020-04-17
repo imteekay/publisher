@@ -1,15 +1,15 @@
 {
-  "title": "Fun with Dates",
-  "description": "Learning about Dates and playing around with a new API",
-  "date": "2020-04-15",
+  "title": "React Hooks, Context API, and Pokemons",
+  "description": "Understanding hooks and the context API by building a Pokemon app.",
+  "date": "2020-04-18",
   "tags": [
-    "typescript",
-    "javascript"
+    "javascript",
+    "react"
   ],
-  "imageCover": "assets/couple-date.jpg",
-  "imageAlt": "Two girls sitting together and eating icecream in restaurant",
-  "photographerUrl": "https://unsplash.com/@jmvillejo",
-  "photographerName": "Jed Villejo",
+  "imageCover": "assets/pokemon.jpg",
+  "imageAlt": "Ash from Pokemon",
+  "photographerUrl": "https://www.instagram.com/kazuh.illust",
+  "photographerName": "Kazumi Yasiro",
   "articleFile": "article.md",
-  "keywords": "typescript,javascript"
+  "keywords": "javascript,react"
 }
