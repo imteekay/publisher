@@ -3,29 +3,30 @@ import { resolve } from 'path';
 import showdown from 'showdown';
 
 type ArticleConfig = {
-  title: string
-  description: string
-  date: string
-  tags: string[]
-  imageCover: string
-  imageAlt: string
-  photographerUrl: string
-  photographerName: string
-  articleFile: string
-  keywords: string
-}
+  title: string;
+  description: string;
+  date: string;
+  tags: string[];
+  imageCover: string;
+  imageAlt: string;
+  photographerUrl: string;
+  photographerName: string;
+  articleFile: string;
+  newArticlePath: string;
+  keywords: string;
+};
 
 type ArticleAttributes = {
-  title: string
-  description: string
-  date: string
-  articleTags: string
-  imageCover: string
-  imageAlt: string
-  photographerUrl: string
-  photographerName: string
-  articleBody: string
-  keywords: string
+  title: string;
+  description: string;
+  date: string;
+  articleTags: string;
+  imageCover: string;
+  imageAlt: string;
+  photographerUrl: string;
+  photographerName: string;
+  articleBody: string;
+  keywords: string;
 };
 
 const getPattern = (find: string): RegExp =>
@@ -89,7 +90,7 @@ const start = async () => {
     articleBody
   });
 
-  fs.writeFile('examples/index.html', article);
+  fs.writeFile(articleConfig.newArticlePath, article);
 };
 
 start();
