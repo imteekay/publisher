@@ -1,33 +1,15 @@
-import { promises as fs } from 'fs';
+import { promises } from 'fs';
 import { resolve } from 'path';
 import showdown from 'showdown';
 import open from 'open';
+import { ArticleConfig, ArticleAttributes, ArticlePaths } from './types';
 
-type ArticleConfig = {
-  title: string;
-  description: string;
-  date: string;
-  tags: string[];
-  imageCover: string;
-  imageAlt: string;
-  photographerUrl: string;
-  photographerName: string;
-  articleFile: string;
-  keywords: string;
-};
-
-type ArticleAttributes = {
-  title: string;
-  description: string;
-  date: string;
-  articleTags: string;
-  imageCover: string;
-  imageAlt: string;
-  photographerUrl: string;
-  photographerName: string;
-  articleBody: string;
-  keywords: string;
-};
+const {
+  readFile,
+  mkdir,
+  writeFile,
+  copyFile
+} = promises;
 
 const getPattern = (find: string): RegExp =>
   new RegExp('\{\{(?:\\s+)?(' + find + ')(?:\\s+)?\}\}', 'g');
@@ -42,24 +24,24 @@ const fromMarkdownToHTML = (articleMarkdown: string): string => {
 
 const getTemplateContent = async (): Promise<string> => {
   const contentTemplatePath = resolve(__dirname, '../examples/template.html');
-  return await fs.readFile(contentTemplatePath, 'utf8');
+  return await readFile(contentTemplatePath, 'utf8');
 };
 
 const getArticleConfig = async (): Promise<ArticleConfig> => {
   const articleConfigPath = resolve(__dirname, '../examples/article.config.json');
-  const articleConfigContent = await fs.readFile(articleConfigPath, 'utf8');
+  const articleConfigContent = await readFile(articleConfigPath, 'utf8');
   return JSON.parse(articleConfigContent);
 };
 
 const getArticleTags = async ({ tags }: { tags: string[] }): Promise<string> => {
   const tagTemplatePath = resolve(__dirname, '../examples/tag_template.html');
-  const tagContent = await fs.readFile(tagTemplatePath, 'utf8');
+  const tagContent = await readFile(tagTemplatePath, 'utf8');
   return tags.map(buildTag(tagContent)).join('');
 };
 
 const getArticleBody = async ({ articleFile }: { articleFile: string }): Promise<string> => {
   const articleMarkdownPath = resolve(__dirname, `../examples/${articleFile}`);
-  const articleMarkdown = await fs.readFile(articleMarkdownPath, 'utf8');
+  const articleMarkdown = await readFile(articleMarkdownPath, 'utf8');
   return fromMarkdownToHTML(articleMarkdown);
 };
 
@@ -70,12 +52,27 @@ const slugify = (title: string): string =>
     .replace(/[^\w\s]/gi, '')
     .replace(/[\s]/g, '-');
 
-const buildNewArticlePath = ({ title, date }: { title: string, date: string }): string => {
+const buildNewArticleFolderPath = ({ title, date }: { title: string, date: string }): string => {
   const [year, month]: string[] = date.split('-');
-  const slugifiedTitle = slugify(title);
+  const slugifiedTitle: string = slugify(title);
 
-  return `../${year}/${month}/${slugifiedTitle}/index.html`;
-}
+  return resolve(__dirname, `../../${year}/${month}/${slugifiedTitle}`);
+};
+
+const buildPaths = (newArticleFolderPath: string): ArticlePaths => {
+  const imageCoverFileName: string = 'cover.jpeg';
+  const newArticlePath: string = `${newArticleFolderPath}/index.html`;
+  const imageCoverExamplePath: string = resolve(__dirname, `../examples/${imageCoverFileName}`);
+  const assetsFolder: string = `${newArticleFolderPath}/assets`;
+  const imageCoverPath: string = `${assetsFolder}/${imageCoverFileName}`;
+
+  return {
+    newArticlePath,
+    imageCoverExamplePath,
+    imageCoverPath,
+    assetsFolder
+  };
+};
 
 const buildArticle = (templateContent: string) => ({
   with: (articleConfig: ArticleAttributes) =>
@@ -97,7 +94,14 @@ const start = async () => {
   const articleConfig: ArticleConfig = await getArticleConfig();
   const articleTags: string = await getArticleTags(articleConfig);
   const articleBody: string = await getArticleBody(articleConfig);
-  const newArticlePath = buildNewArticlePath(articleConfig);
+  const newArticleFolderPath: string = buildNewArticleFolderPath(articleConfig);
+
+  const {
+    newArticlePath,
+    imageCoverExamplePath,
+    imageCoverPath,
+    assetsFolder
+  }: ArticlePaths = buildPaths(newArticleFolderPath);
 
   const article: string = buildArticle(templateContent).with({
     ...articleConfig,
@@ -105,7 +109,10 @@ const start = async () => {
     articleBody
   });
 
-  await fs.writeFile(newArticlePath, article);
+  await mkdir(newArticleFolderPath, { recursive: true });
+  await writeFile(newArticlePath, article);
+  await mkdir(assetsFolder, { recursive: true });
+  await copyFile(imageCoverExamplePath, imageCoverPath);
   await open(newArticlePath);
 };
 
