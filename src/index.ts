@@ -2,6 +2,7 @@ import { promises } from 'fs';
 import { resolve } from 'path';
 import showdown from 'showdown';
 import open from 'open';
+import { ArticleConfig, ArticleAttributes, ArticlePaths } from './types';
 
 const {
   readFile,
@@ -9,39 +10,6 @@ const {
   writeFile,
   copyFile
 } = promises;
-
-type ArticleConfig = {
-  title: string;
-  description: string;
-  date: string;
-  tags: string[];
-  imageCover: string;
-  imageAlt: string;
-  photographerUrl: string;
-  photographerName: string;
-  articleFile: string;
-  keywords: string;
-};
-
-type ArticleAttributes = {
-  title: string;
-  description: string;
-  date: string;
-  articleTags: string;
-  imageCover: string;
-  imageAlt: string;
-  photographerUrl: string;
-  photographerName: string;
-  articleBody: string;
-  keywords: string;
-};
-
-type ArticlePaths = {
-  newArticlePath: string;
-  imageCoverExamplePath: string;
-  imageCoverPath: string;
-  assetsFolder: string;
-};
 
 const getPattern = (find: string): RegExp =>
   new RegExp('\{\{(?:\\s+)?(' + find + ')(?:\\s+)?\}\}', 'g');
