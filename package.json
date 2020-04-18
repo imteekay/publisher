@@ -4,6 +4,7 @@
   "description": "Automate blog post publishing",
   "dependencies": {
     "@types/showdown": "^1.9.3",
+    "open": "^7.0.3",
     "showdown": "^1.9.1"
   },
   "devDependencies": {
