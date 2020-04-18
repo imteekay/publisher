@@ -12,7 +12,6 @@ type ArticleConfig = {
   photographerUrl: string;
   photographerName: string;
   articleFile: string;
-  newArticlePath: string;
   keywords: string;
 };
 
@@ -63,6 +62,20 @@ const getArticleBody = async ({ articleFile }: { articleFile: string }): Promise
   return fromMarkdownToHTML(articleMarkdown);
 };
 
+const slugify = (title: string): string =>
+  title
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\s]/gi, '')
+    .replace(/[\s]/g, '-');
+
+const buildNewArticlePath = ({ title, date }: { title: string, date: string }): string => {
+  const [year, month]: string[] = date.split('-');
+  const slugifiedTitle = slugify(title);
+
+  return `../${year}/${month}/${slugifiedTitle}/index.html`;
+}
+
 const buildArticle = (templateContent: string) => ({
   with: (articleConfig: ArticleAttributes) =>
     templateContent
@@ -83,6 +96,7 @@ const start = async () => {
   const articleConfig: ArticleConfig = await getArticleConfig();
   const articleTags: string = await getArticleTags(articleConfig);
   const articleBody: string = await getArticleBody(articleConfig);
+  const newArticlePath = buildNewArticlePath(articleConfig);
 
   const article: string = buildArticle(templateContent).with({
     ...articleConfig,
@@ -90,7 +104,7 @@ const start = async () => {
     articleBody
   });
 
-  fs.writeFile(articleConfig.newArticlePath, article);
+  fs.writeFile(newArticlePath, article);
 };
 
 start();
