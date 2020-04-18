@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import { resolve } from 'path';
 import showdown from 'showdown';
+import open from 'open';
 
 type ArticleConfig = {
   title: string;
@@ -104,7 +105,8 @@ const start = async () => {
     articleBody
   });
 
-  fs.writeFile(newArticlePath, article);
+  await fs.writeFile(newArticlePath, article);
+  await open(newArticlePath);
 };
 
 start();
