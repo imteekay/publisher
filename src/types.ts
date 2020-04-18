@@ -29,4 +29,5 @@ export type ArticlePaths = {
   imageCoverExamplePath: string;
   imageCoverPath: string;
   assetsFolder: string;
+  imageCoverFileName: string;
 };

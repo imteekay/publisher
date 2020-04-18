@@ -1,4 +1,4 @@
-import { promises } from 'fs';
+import fs, { promises } from 'fs';
 import { resolve } from 'path';
 import showdown from 'showdown';
 import open from 'open';
@@ -10,6 +10,13 @@ const {
   writeFile,
   copyFile
 } = promises;
+
+enum ImageExtension {
+  JPEG = 'jpeg',
+  JPG = 'jpg',
+  PNG = 'png',
+  GIF = 'gif'
+};
 
 const getPattern = (find: string): RegExp =>
   new RegExp('\{\{(?:\\s+)?(' + find + ')(?:\\s+)?\}\}', 'g');
@@ -59,8 +66,32 @@ const buildNewArticleFolderPath = ({ title, date }: { title: string, date: strin
   return resolve(__dirname, `../../${year}/${month}/${slugifiedTitle}`);
 };
 
+const existsFile = (folder: string, fileName: string) => (extension: string) =>
+  fs.existsSync(`${folder}/${fileName}.${extension}`);
+
+const getImageExtension = (): string => {
+  const examplesFolder: string = resolve(__dirname, `../examples`);
+  const imageName: string = 'cover';
+  const hasFileWithExtension = existsFile(examplesFolder, imageName);
+
+  if (hasFileWithExtension(ImageExtension.JPEG)) {
+    return ImageExtension.JPEG;
+  }
+
+  if (hasFileWithExtension(ImageExtension.JPG)) {
+    return ImageExtension.JPG;
+  }
+
+  if (hasFileWithExtension(ImageExtension.PNG)) {
+    return ImageExtension.PNG;
+  }
+
+  return ImageExtension.GIF;
+};
+
 const buildPaths = (newArticleFolderPath: string): ArticlePaths => {
-  const imageCoverFileName: string = 'cover.jpeg';
+  const imageExtension: string = getImageExtension();
+  const imageCoverFileName: string = `cover.${imageExtension}`;
   const newArticlePath: string = `${newArticleFolderPath}/index.html`;
   const imageCoverExamplePath: string = resolve(__dirname, `../examples/${imageCoverFileName}`);
   const assetsFolder: string = `${newArticleFolderPath}/assets`;
@@ -70,7 +101,8 @@ const buildPaths = (newArticleFolderPath: string): ArticlePaths => {
     newArticlePath,
     imageCoverExamplePath,
     imageCoverPath,
-    assetsFolder
+    assetsFolder,
+    imageCoverFileName
   };
 };
 
@@ -100,13 +132,17 @@ const start = async () => {
     newArticlePath,
     imageCoverExamplePath,
     imageCoverPath,
-    assetsFolder
+    assetsFolder,
+    imageCoverFileName
   }: ArticlePaths = buildPaths(newArticleFolderPath);
+
+  const imageCover: string = `assets/${imageCoverFileName}`;
 
   const article: string = buildArticle(templateContent).with({
     ...articleConfig,
     articleTags,
-    articleBody
+    articleBody,
+    imageCover
   });
 
   await mkdir(newArticleFolderPath, { recursive: true });
