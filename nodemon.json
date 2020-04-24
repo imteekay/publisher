@@ -1,7 +1,7 @@
 {
   "watch": [
     "src",
-    "data"
+    "examples"
   ],
   "ext": ".ts,.js,.html,.json",
   "ignore": [],
