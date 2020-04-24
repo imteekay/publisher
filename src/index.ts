@@ -66,7 +66,7 @@ const buildNewArticleFolderPath = ({ title, date }: { title: string, date: strin
   return resolve(__dirname, `../../${year}/${month}/${slugifiedTitle}`);
 };
 
-const existsFile = (folder: string, fileName: string) => (extension: string) =>
+const existsFile = (folder: string, fileName: string) => (extension: string): boolean =>
   fs.existsSync(`${folder}/${fileName}.${extension}`);
 
 const getImageExtension = (): string => {
